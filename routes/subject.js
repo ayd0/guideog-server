@@ -169,18 +169,45 @@ subjectRouter
             .catch((err) => next(err));
     })
     .delete((req, res, next) => {
-        // UNFINISHED
+        if (req.isPrimaryRoute) {
+            const err = new Error(
+                "DELETE is not supported on this route. You must use a route attached to a category ID."
+            );
+            return next(err);
+        }
         Category.findById(req.categoryId).then((category) => {
             Subject.findById(req.params.subjectId).then((subject) => {
+                let index = null;
+                for (let i = 0; i < category.subjects.length; ++i) {
+                    if (category.subjects[i]._id.equals(subject._id)) {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index === null) {
+                    const err = new Error(
+                        `Not able to find subject: ${subject._id} in category ${category._id}`
+                    );
+                    return next(err);
+                }
+
+                let subList = category.subjects.slice();
+                subList.splice(index, 1);
+
                 Category.updateOne(
                     { _id: category._id },
                     {
-                        subjects: category.subjects.splice(
-                            category.subjects.indexOf(subject),
-                            1
-                        ),
+                        $set: { subjects: subList },
                     }
-                );
+                ).catch((err) => next(err));
+
+                Subject.deleteOne({ _id: subject._id })
+                    .then((response) => {
+                        res.statusCode = 200;
+                        res.setHeader("Content-Type", "application/json");
+                        res.json(response);
+                    })
+                    .catch((err) => next(err));
             });
         });
     });
