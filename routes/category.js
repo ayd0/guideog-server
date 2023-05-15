@@ -18,7 +18,6 @@ categoryRouter
         req.body.author = req.user._id;
         Category.create(req.body)
             .then((category) => {
-                console.log("Category Created ", category);
                 res.statusCode = 200;
                 res.setHeader("Content-Type", "application/json");
                 res.json(category);

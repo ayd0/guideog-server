@@ -26,17 +26,26 @@ subjectRouter
         }
     })
     .post(authenticate.verifyUser, (req, res, next) => {
-        req.body.author = req.user._id;
-        Category.findById(req.categoryId)
-            .then((category) => {
-                Subject.create(req.body).then((subject) => {
-                    category.subjects.push(subject);
-                    category.save();
-                    res.setHeader("Content-Type", "application/json");
-                    res.json(subject);
-                });
-            })
-            .catch((err) => next(err));
+        if (req.isPrimaryRoute) {
+            const err = new Error(
+                "Can not post a subject that isn't attached to a category."
+            );
+            err.statusCode = 403;
+            return next(err);
+        } else {
+            req.body.author = req.user._id;
+            Category.findById(req.categoryId)
+                .then((category) => {
+                    Subject.create(req.body).then((subject) => {
+                        category.subjects.push(subject);
+                        category.save();
+
+                        res.setHeader("Content-Type", "application/json");
+                        res.json(subject);
+                    });
+                })
+                .catch((err) => next(err));
+        }
     })
     .put(authenticate.verifyUser, (req, res) => {
         res.statusCode = 403;

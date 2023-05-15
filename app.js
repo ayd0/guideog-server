@@ -27,6 +27,7 @@ const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
 const categoryRouter = require("./routes/category");
 const subjectRouter = require("./routes/subject");
+const guideRouter = require("./routes/guide");
 
 const app = express();
 
@@ -60,6 +61,22 @@ app.use(
     },
     subjectRouter
 );
+app.use(
+    "/guide",
+    (req, res, next) => {
+      req.isPrimaryRoute = true;
+      next();
+    },
+    guideRouter
+);
+app.use(
+    "/category/:categoryId/subject/:subjectId/guide",
+    (req, res, next) => {
+      req.subjectId = req.params.subjectId;
+      next();
+    },
+    guideRouter
+)
 
 app.use(express.static(path.join(__dirname, "public")));
 
