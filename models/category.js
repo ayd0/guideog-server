@@ -105,3 +105,4 @@ const categorySchema = new mongoose.Schema(
 exports.Category = mongoose.model("Category", categorySchema);
 exports.Subject = mongoose.model("Subject", subjectSchema);
 exports.Guide  = mongoose.model("Guide", guideSchema);
+exports.Step  = mongoose.model("Step", stepSchema);

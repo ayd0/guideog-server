@@ -28,6 +28,7 @@ const usersRouter = require("./routes/users");
 const categoryRouter = require("./routes/category");
 const subjectRouter = require("./routes/subject");
 const guideRouter = require("./routes/guide");
+const stepRouter = require("./routes/step");
 
 const app = express();
 
@@ -64,19 +65,35 @@ app.use(
 app.use(
     "/guide",
     (req, res, next) => {
-      req.isPrimaryRoute = true;
-      next();
+        req.isPrimaryRoute = true;
+        next();
     },
     guideRouter
 );
 app.use(
     "/category/:categoryId/subject/:subjectId/guide",
     (req, res, next) => {
-      req.subjectId = req.params.subjectId;
-      next();
+        req.subjectId = req.params.subjectId;
+        next();
     },
     guideRouter
-)
+);
+app.use(
+    "/step",
+    (req, res, next) => {
+        req.isPrimaryRoute = true;
+        next();
+    },
+    stepRouter
+);
+app.use(
+    "/category/:categoryId/subject/:subjectId/guide/:guideId/step",
+    (req, res, next) => {
+        req.guideId = req.params.guideId;
+        next();
+    },
+    stepRouter
+);
 
 app.use(express.static(path.join(__dirname, "public")));
 
