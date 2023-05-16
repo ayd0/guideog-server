@@ -164,7 +164,7 @@ subjectRouter
                                 $set: {
                                     name: req.body.name || subject.name,
                                     description:
-                                        req.body.description || subject.rating,
+                                        req.body.description || subject.description,
                                 },
                             }
                         )
