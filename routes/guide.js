@@ -103,4 +103,122 @@ guideRouter
         }
     );
 
+guideRouter
+    .route("/:guideId")
+    .get((req, res, next) => {
+        Guide.findById(req.params.guideId)
+            .then((guide) => {
+                res.statusCode = 200;
+                res.setHeader("Content-Type", "application/json");
+                res.json(guide);
+            })
+            .catch((err) => next(err));
+    })
+    .post((req, res) => {
+        res.statusCode = 403;
+        res.end(
+            `POST operations not supported on route: guide/${req.params.guideId}`
+        );
+    })
+    .put((req, res, next) => {
+        if (req.isPrimaryRoute) {
+            const err = new Error(
+                "PUT is not supported on this route. You must use a route attached to a subject ID."
+            );
+            return next(err);
+        }
+        Subject.findById(req.subjectId)
+            .then((subject) => {
+                Guide.findById(req.params.guideId)
+                    .then((guide) => {
+                        // this is a hacky workaround as mongoose .indexOf() is currently not working as it should
+                        let index = null;
+                        for (let i = 0; i < subject.guides.length; ++i) {
+                            if (subject.guides[i]._id.equals(guide._id)) {
+                                index = i;
+                                break;
+                            }
+                        }
+                        if (index === null) {
+                            const err = new Error(
+                                `Not able to find subject: ${guide._id} in category ${subject._id}`
+                            );
+                            return next(err);
+                        }
+
+                        let guideList = subject.guides.slice();
+                        guideList[index].name = req.body.name;
+                        guideList[index].description = req.body.description;
+
+                        Subject.updateOne(
+                            { _id: subject._id },
+                            { $set: { guide: guideList } }
+                        )
+                            .then(() => subject.save())
+                            .catch((err) => next(err));
+
+                        Guide.updateOne(
+                            { _id: guide._id },
+                            {
+                                $set: {
+                                    name: req.body.name,
+                                    description: req.body.description,
+                                },
+                            }
+                        )
+                            .then(() => guide.save())
+                            .catch((err) => next(err));
+
+                        res.statusCode = 200;
+                        res.setHeader("Content-Type", "application/json");
+                        res.json(guide);
+                    })
+                    .catch((err) => next(err));
+            })
+            .catch((err) => next(err));
+    })
+    .delete((req, res, next) => {
+        if (req.isPrimaryRoute) {
+            const err = new Error(
+                "DELETE is not supported on this route. You must use a route attached to a subject ID."
+            );
+            return next(err);
+        }
+        Subject.findById(req.subjectId).then((subject) => {
+            Guide.findById(req.params.guideId).then((guide) => {
+                let index = null;
+                for (let i = 0; i < subject.guides.length; ++i) {
+                    if (subject.guides[i]._id.equals(guide._id)) {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index === null) {
+                    const err = new Error(
+                        `Not able to find subject: ${guide._id} in category ${subject._id}`
+                    );
+                    return next(err);
+                }
+
+                let guideList = subject.guides.slice();
+                guideList.splice(index, 1);
+
+                Subject.updateOne(
+                    { _id: subject._id },
+                    {
+                        $set: { guides: guideList },
+                    }
+                ).catch((err) => next(err));
+
+                Guide.deleteOne({ _id: guide._id })
+                    .then((response) => {
+                        res.statusCode = 200;
+                        res.setHeader("Content-Type", "application/json");
+                        res.json(response);
+                    })
+                    .catch((err) => next(err));
+            });
+        });
+    });
+
 module.exports = guideRouter;
