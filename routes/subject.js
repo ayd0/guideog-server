@@ -147,8 +147,9 @@ subjectRouter
                         }
 
                         let subList = category.subjects.slice();
-                        subList[index].name = req.body.name;
-                        subList[index].description = req.body.description;
+                        subList[index].name = req.body.name || subject.name;
+                        subList[index].description =
+                            req.body.description || subject.description;
 
                         Category.updateOne(
                             { _id: category._id },
@@ -161,8 +162,9 @@ subjectRouter
                             { _id: subject._id },
                             {
                                 $set: {
-                                    name: req.body.name,
-                                    description: req.body.description,
+                                    name: req.body.name || subject.name,
+                                    description:
+                                        req.body.description || subject.rating,
                                 },
                             }
                         )

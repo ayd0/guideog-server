@@ -147,8 +147,11 @@ guideRouter
                         }
 
                         let guideList = subject.guides.slice();
-                        guideList[index].name = req.body.name;
-                        guideList[index].description = req.body.description;
+                        guideList[index].name = req.body.name || guide.rating;
+                        guideList[index].description =
+                            req.body.description || guide.rating;
+                        guideList[index].rating =
+                            req.body.rating || guide.rating;
 
                         Subject.updateOne(
                             { _id: subject._id },
@@ -161,8 +164,11 @@ guideRouter
                             { _id: guide._id },
                             {
                                 $set: {
-                                    name: req.body.name,
-                                    description: req.body.description,
+                                    name: req.body.name || guide.name,
+                                    description:
+                                        req.body.description ||
+                                        guide.description,
+                                    rating: req.body.rating || guide.rating,
                                 },
                             }
                         )
