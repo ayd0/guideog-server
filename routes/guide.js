@@ -141,7 +141,7 @@ guideRouter
                         }
                         if (index === null) {
                             const err = new Error(
-                                `Not able to find subject: ${guide._id} in category ${subject._id}`
+                                `Not able to find guide: ${guide._id} in subject ${subject._id}`
                             );
                             return next(err);
                         }
@@ -201,7 +201,7 @@ guideRouter
                 }
                 if (index === null) {
                     const err = new Error(
-                        `Not able to find subject: ${guide._id} in category ${subject._id}`
+                        `Not able to find guide: ${guide._id} in subject ${subject._id}`
                     );
                     return next(err);
                 }
