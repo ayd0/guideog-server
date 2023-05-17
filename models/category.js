@@ -34,7 +34,7 @@ const stepSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
-        stepChain: [stepChainSchema],
+        stepChain: stepChainSchema,
     },
     {
         timestamps: true,
@@ -106,3 +106,5 @@ exports.Category = mongoose.model("Category", categorySchema);
 exports.Subject = mongoose.model("Subject", subjectSchema);
 exports.Guide  = mongoose.model("Guide", guideSchema);
 exports.Step  = mongoose.model("Step", stepSchema);
+exports.StepChain  = mongoose.model("StepChain", stepChainSchema);
+exports.StepReference  = mongoose.model("StepReference", stepReferenceSchema);
