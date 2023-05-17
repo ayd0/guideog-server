@@ -3,10 +3,12 @@ const stepRouter = express.Router();
 const Guide = require("../models/category").Guide;
 const Step = require("../models/category").Step;
 const authenticate = require("../authenticate");
+const cors = require("./cors");
 
 stepRouter
     .route("/")
-    .get((req, res, next) => {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get(cors.cors, (req, res, next) => {
         if (req.isPrimaryRoute) {
             Step.find()
                 .then((steps) => {
@@ -25,7 +27,7 @@ stepRouter
                 .catch((err) => next(err));
         }
     })
-    .post(authenticate.verifyUser, (req, res, next) => {
+    .post([cors.corsWithOptions, authenticate.verifyUser], (req, res, next) => {
         if (req.isPrimaryRoute) {
             const err = new Error(
                 "Can not post a step that isn't attached to a guide."
@@ -48,13 +50,13 @@ stepRouter
                 .catch((err) => next(err));
         }
     })
-    .put((req, res, next) => {
+    .put([cors.corsWithOptions, authenticate.verifyUser], (req, res, next) => {
         const err = new Error("PUT operation not supported on /steps");
         res.statusCode = 403;
         return next(err);
     })
     .delete(
-        [authenticate.verifyUser, authenticate.verifyAdmin],
+        [cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin],
         (req, res, next) => {
             if (req.isPrimaryRoute) {
                 Guide.updateMany({ $set: { steps: [] } }).catch((err) =>
@@ -99,7 +101,8 @@ stepRouter
 
 stepRouter
     .route("/:stepId")
-    .get((req, res, next) => {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get(cors.cors, (req, res, next) => {
         Step.findById(req.params.stepId)
             .then((step) => {
                 res.statusCode = 200;
@@ -108,13 +111,13 @@ stepRouter
             })
             .catch((err) => next(err));
     })
-    .post((req, res) => {
+    .post([cors.corsWithOptions, authenticate.verifyUser], (req, res) => {
         res.statusCode = 403;
         res.end(
             `POST operations not supported on route: step/${req.params.stepId}`
         );
     })
-    .put((req, res, next) => {
+    .put([cors.corsWithOptions, authenticate.verifyUser], (req, res, next) => {
         if (req.isPrimaryRoute) {
             const err = new Error(
                 "PUT is not supported on this route. You must use a route attached to a guide ID."
@@ -175,7 +178,7 @@ stepRouter
             })
             .catch((err) => next(err));
     })
-    .delete((req, res, next) => {
+    .delete([cors.corsWithOptions, authenticate.verifyUser], (req, res, next) => {
         if (req.isPrimaryRoute) {
             const err = new Error(
                 "DELETE is not supported on this route. You must use a route attached to a guide ID."

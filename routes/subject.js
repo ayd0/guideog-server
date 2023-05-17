@@ -3,10 +3,12 @@ const subjectRouter = express.Router();
 const Category = require("../models/category").Category;
 const Subject = require("../models/category").Subject;
 const authenticate = require("../authenticate");
+const cors = require("./cors");
 
 subjectRouter
     .route("/")
-    .get((req, res, next) => {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get(cors.cors, (req, res, next) => {
         if (req.isPrimaryRoute) {
             Subject.find()
                 .then((subjects) => {
@@ -25,7 +27,7 @@ subjectRouter
                 .catch((err) => next(err));
         }
     })
-    .post(authenticate.verifyUser, (req, res, next) => {
+    .post([cors.corsWithOptions, authenticate.verifyUser], (req, res, next) => {
         if (req.isPrimaryRoute) {
             const err = new Error(
                 "Can not post a subject that isn't attached to a category."
@@ -47,14 +49,14 @@ subjectRouter
                 .catch((err) => next(err));
         }
     })
-    .put(authenticate.verifyUser, (req, res) => {
+    .put([cors.corsWithOptions, authenticate.verifyUser], (req, res) => {
         res.statusCode = 403;
         res.end(
             `PUT operation not supported on /categories/${req.categoryId}/subject`
         );
     })
     .delete(
-        [authenticate.verifyUser, authenticate.verifyAdmin],
+        [cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin],
         (req, res, next) => {
             if (req.isPrimaryRoute) {
                 Category.updateMany({ $set: { subjects: [] } }).catch((err) =>
@@ -105,7 +107,8 @@ subjectRouter
 
 subjectRouter
     .route("/:subjectId")
-    .get((req, res, next) => {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get(cors.cors, (req, res, next) => {
         Subject.findById(req.params.subjectId)
             .then((subject) => {
                 res.statusCode = 200;
@@ -114,13 +117,13 @@ subjectRouter
             })
             .catch((err) => next(err));
     })
-    .post((req, res) => {
+    .post([cors.corsWithOptions, authenticate.verifyUser], (req, res) => {
         res.statusCode = 403;
         res.end(
             `POST operations not supported on subject/${req.params.subjectId}`
         );
     })
-    .put((req, res, next) => {
+    .put([cors.corsWithOptions, authenticate.verifyUser], (req, res, next) => {
         if (req.isPrimaryRoute) {
             const err = new Error(
                 "PUT is not supported on this route. You must use a route attached to a category ID."
@@ -179,7 +182,7 @@ subjectRouter
             })
             .catch((err) => next(err));
     })
-    .delete((req, res, next) => {
+    .delete([cors.corsWithOptions, authenticate.verifyUser], (req, res, next) => {
         if (req.isPrimaryRoute) {
             const err = new Error(
                 "DELETE is not supported on this route. You must use a route attached to a category ID."

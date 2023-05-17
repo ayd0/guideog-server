@@ -4,10 +4,12 @@ const Step = require("../models/category").Step;
 const StepChain = require("../models/category").StepChain;
 const StepReference = require("../models/category").StepReference;
 const authenticate = require("../authenticate");
+const cors = require("./cors");
 
 stepChainRouter
     .route("/")
-    .get((req, res, next) => {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get(cors.corsWithOptions, (req, res, next) => {
         Step.find(req.stepId)
             .then((step) => {
                 res.statusCode = 200;
@@ -16,7 +18,7 @@ stepChainRouter
             })
             .catch((err) => next(err));
     })
-    .post((req, res, next) => {
+    .post(cors.corsWithOptions, (req, res, next) => {
         Step.find(req.stepId)
             .then((step) => {
                 StepChain.create()

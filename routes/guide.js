@@ -3,10 +3,12 @@ const guideRouter = express.Router();
 const Subject = require("../models/category").Subject;
 const Guide = require("../models/category").Guide;
 const authenticate = require("../authenticate");
+const cors = require("./cors");
 
 guideRouter
     .route("/")
-    .get((req, res, next) => {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get(cors.cors, (req, res, next) => {
         if (req.isPrimaryRoute) {
             Guide.find()
                 .then((guides) => {
@@ -25,7 +27,7 @@ guideRouter
                 .catch((err) => next(err));
         }
     })
-    .post(authenticate.verifyUser, (req, res, next) => {
+    .post([cors.corsWithOptions, authenticate.verifyUser], (req, res, next) => {
         if (req.isPrimaryRoute) {
             const err = new Error(
                 "Can not post a guide that isn't attached to a subject."
@@ -48,13 +50,13 @@ guideRouter
                 .catch((err) => next(err));
         }
     })
-    .put((req, res, next) => {
+    .put([cors.corsWithOptions, authenticate.verifyUser], (req, res, next) => {
         const err = new Error("PUT operation not supported on /guides");
         res.statusCode = 403;
         return next(err);
     })
     .delete(
-        [authenticate.verifyUser, authenticate.verifyAdmin],
+        [cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin],
         (req, res, next) => {
             if (req.isPrimaryRoute) {
                 Subject.updateMany({ $set: { guides: [] } }).catch((err) =>
@@ -105,7 +107,8 @@ guideRouter
 
 guideRouter
     .route("/:guideId")
-    .get((req, res, next) => {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get(cors.cors, (req, res, next) => {
         Guide.findById(req.params.guideId)
             .then((guide) => {
                 res.statusCode = 200;
@@ -114,13 +117,13 @@ guideRouter
             })
             .catch((err) => next(err));
     })
-    .post((req, res) => {
+    .post([cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin], (req, res) => {
         res.statusCode = 403;
         res.end(
             `POST operations not supported on route: guide/${req.params.guideId}`
         );
     })
-    .put((req, res, next) => {
+    .put([cors.corsWithOptions, authenticate.verifyUser], (req, res, next) => {
         if (req.isPrimaryRoute) {
             const err = new Error(
                 "PUT is not supported on this route. You must use a route attached to a subject ID."
@@ -183,7 +186,7 @@ guideRouter
             })
             .catch((err) => next(err));
     })
-    .delete((req, res, next) => {
+    .delete([cors.corsWithOptions, authenticate.verifyUser], (req, res, next) => {
         if (req.isPrimaryRoute) {
             const err = new Error(
                 "DELETE is not supported on this route. You must use a route attached to a subject ID."

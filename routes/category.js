@@ -2,10 +2,12 @@ const express = require("express");
 const categoryRouter = express.Router();
 const Category = require("../models/category").Category;
 const authenticate = require("../authenticate");
+const cors = require("./cors");
 
 categoryRouter
     .route("/")
-    .get((req, res, next) => {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get(cors.cors, (req, res, next) => {
         Category.find()
             .then((categories) => {
                 res.statusCode = 200;
@@ -14,7 +16,7 @@ categoryRouter
             })
             .catch((err) => next(err));
     })
-    .post(authenticate.verifyUser, (req, res, next) => {
+    .post([cors.corsWithOptions, authenticate.verifyUser], (req, res, next) => {
         req.body.author = req.user._id;
         Category.create(req.body)
             .then((category) => {
@@ -24,12 +26,12 @@ categoryRouter
             })
             .catch((err) => next(err));
     })
-    .put(authenticate.verifyUser, (req, res) => {
+    .put([cors.corsWithOptions, authenticate.verifyUser], (req, res) => {
         res.statusCode = 403;
         res.end(`PUT operation not supported on /categories`);
     })
     .delete(
-        [authenticate.verifyUser, authenticate.verifyAdmin],
+        [cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin],
         (req, res, next) => {
             Category.deleteMany()
                 .then((response) => {
@@ -43,7 +45,8 @@ categoryRouter
 
 categoryRouter
     .route("/:categoryId")
-    .get((req, res, next) => {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get(cors.cors, (req, res, next) => {
         Category.findById(req.params.categoryId)
             .then((category) => {
                 res.statusCode = 200;
@@ -52,13 +55,13 @@ categoryRouter
             })
             .catch((err) => next(err));
     })
-    .post(authenticate.verifyUser, (req, res) => {
+    .post([cors.corsWithOptions, authenticate.verifyUser], (req, res) => {
         res.statusCode = 403;
         res.end(
             `POST operation not supported on /categories/${req.params.categoryId}`
         );
     })
-    .put(authenticate.verifyUser, (req, res, next) => {
+    .put([cors.corsWithOptions, authenticate.verifyUser], (req, res, next) => {
         Category.findByIdAndUpdate(
             req.params.categoryId,
             { $set: req.body },
@@ -71,7 +74,7 @@ categoryRouter
             })
             .catch((err) => next(err));
     })
-    .delete(authenticate.verifyUser, (req, res, next) => {
+    .delete([cors.corsWithOptions, authenticate.verifyUser], (req, res, next) => {
         Category.findByIdAndDelete(req.params.categoryId)
             .then((response) => {
                 res.statusCode = 200;
