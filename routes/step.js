@@ -69,11 +69,7 @@ stepRouter
                 Guide.findById(req.guideId)
                     .then((guide) => {
                         if (guide) {
-                            for (
-                                let i = guide.steps.length - 1;
-                                i >= 0;
-                                --i
-                            ) {
+                            for (let i = guide.steps.length - 1; i >= 0; --i) {
                                 Step.findByIdAndDelete(
                                     guide.steps[i]._id
                                 ).catch((err) => next(err));
@@ -91,9 +87,7 @@ stepRouter
                             res.setHeader("Content-Type", "application/json");
                             res.json(guide);
                         } else {
-                            err = new Error(
-                                `Guide ${req.guideId} not found`
-                            );
+                            err = new Error(`Guide ${req.guideId} not found`);
                             err.status = 404;
                             return next(err);
                         }
@@ -150,8 +144,7 @@ stepRouter
                         stepList[index].name = req.body.name || step.name;
                         stepList[index].contents =
                             req.body.contents || step.contents;
-                        stepList[index].rating =
-                            req.body.rating || step.rating;
+                        stepList[index].rating = req.body.rating || step.rating;
 
                         Guide.updateOne(
                             { _id: guide._id },
@@ -166,8 +159,7 @@ stepRouter
                                 $set: {
                                     name: req.body.name || step.name,
                                     contents:
-                                        req.body.contents ||
-                                        step.contents,
+                                        req.body.contents || step.contents,
                                     rating: req.body.rating || step.rating,
                                 },
                             }
@@ -226,6 +218,5 @@ stepRouter
             });
         });
     });
-
 
 module.exports = stepRouter;

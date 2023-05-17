@@ -29,8 +29,19 @@ const categoryRouter = require("./routes/category");
 const subjectRouter = require("./routes/subject");
 const guideRouter = require("./routes/guide");
 const stepRouter = require("./routes/step");
+const stepChainRouter = require("./routes/stepChain");
 
 const app = express();
+
+// Secure traffic only
+app.all('*', (req, res, next) => {
+    if (req.secure) {
+      return next();
+    } else {
+        console.log(`Redirecting to: https://${req.hostname}:${app.get('secPort')}${req.url}`);
+        res.redirect(301, `https://${req.hostname}:${app.get('secPort')}${req.url}`);
+    }
+});
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -93,6 +104,14 @@ app.use(
         next();
     },
     stepRouter
+);
+app.use(
+    "/category/:categoryId/subject/:subjectId/guide/:guideId/step/:stepId/stepChain",
+    (req, res, next) => {
+        req.stepId = req.params.stepId;
+        next();
+    },
+    stepChainRouter
 );
 
 app.use(express.static(path.join(__dirname, "public")));
