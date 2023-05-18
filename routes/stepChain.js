@@ -27,9 +27,7 @@ stepChainRouter
     .put([cors.corsWithOptions, authenticate.verifyUser], (req, res, next) => {
         Step.findById(req.stepId)
             .then((step) => {
-                console.log(step.stepChain.references[0].reference.toString() === req.body.reference);
                 if (step.stepChain.references.filter(ref => ref.reference.toString() === req.body.reference)) {
-                    console.log(`FOUND REFERENCE: ${req.body.reference} in STEP`);
                     const err = new Error(`stepReference with reference value: ${req.body.reference} already exists in step: ${step._id}`);
                     err.statusCode = 409;
                     return next(err);
