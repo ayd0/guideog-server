@@ -2,6 +2,7 @@ const express = require("express");
 const stepRouter = express.Router();
 const Guide = require("../models/category").Guide;
 const Step = require("../models/category").Step;
+const StepChain = require("../models/category").StepChain;
 const authenticate = require("../authenticate");
 const cors = require("./cors");
 
@@ -36,6 +37,9 @@ stepRouter
             return next(err);
         } else {
             req.body.author = req.user._id;
+            if (!req.body.stepChain) {
+                req.body.stepChain = StepChain.create();
+            }
             Guide.findById(req.guideId)
                 .then((guide) => {
                     Step.create(req.body).then((step) => {

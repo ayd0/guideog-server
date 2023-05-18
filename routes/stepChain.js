@@ -1,7 +1,6 @@
 const express = require("express");
 const stepChainRouter = express.Router();
 const Step = require("../models/category").Step;
-const StepChain = require("../models/category").StepChain;
 const StepReference = require("../models/category").StepReference;
 const authenticate = require("../authenticate");
 const cors = require("./cors");
@@ -10,7 +9,7 @@ stepChainRouter
     .route("/")
     .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
     .get(cors.corsWithOptions, (req, res, next) => {
-        Step.find(req.stepId)
+        Step.findById(req.stepId)
             .then((step) => {
                 res.statusCode = 200;
                 res.setHeader("Content-Type", "application/json");
@@ -18,33 +17,24 @@ stepChainRouter
             })
             .catch((err) => next(err));
     })
-    .post(cors.corsWithOptions, (req, res, next) => {
-        Step.find(req.stepId)
+    .post((req, res, next) => {
+        const err = new Error(`Unable to post to step/${req.stepId}/stepChain/`);
+        err.statusCode = 403;
+        return next(err);
+    })
+    .put(cors.corsWithOptions, (req, res, next) => {
+        Step.findById(req.stepId)
             .then((step) => {
-                StepChain.create()
-                    .then((stepChain) => {
-                        for (reference of step.body) {
-                            StepReference.create(reference)
-                                .then((reference) => {
-                                    stepChain.references.push(reference);
-                                })
-                                .catch((err) => next(err));
-                        }
-
-                        Step.updateOne(
-                            { _id: step._id },
-                            {
-                                $set: { stepChain: stepChain },
-                            }
-                        )
-                            .then(() => step.save())
-                            .catch((err) => next(err));
+                Step.findById(req.body.reference).then((refStep) => {
+                    StepReference.create(req.body).then((stepReference) => {
+                        step.stepChain.references.push(stepReference);
+                        step.save();
 
                         res.statusCode = 200;
-                        res.setHeader("Content-Type", "application.json");
+                        res.setHeader("Conent-Type", "application/json");
                         res.json(step);
-                    })
-                    .catch((err) => next(err));
+                    });
+                });
             })
             .catch((err) => next(err));
     });
