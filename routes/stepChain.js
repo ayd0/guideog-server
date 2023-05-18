@@ -97,7 +97,7 @@ stepChainRouter
             `PUT operation not supported on /stepChain/${req.params.stepReferenceId}`
         );
     })
-    .delete((req, res, next) => {
+    .delete([cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin], (req, res, next) => {
         StepReference.deleteOne({ _id: req.params.stepReferenceId})
             .then((response) => {
                 res.statusCode = 200;
