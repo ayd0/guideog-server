@@ -18,11 +18,10 @@ stepChainRouter
             .catch((err) => next(err));
     })
     .post((req, res, next) => {
-        const err = new Error(
-            `Unable to post to step/${req.stepId}/stepChain/`
+        res.statusCode = 403;
+        res.end(
+            `POST operation not supported on step/${req.stepId}/stepChain`
         );
-        err.statusCode = 403;
-        return next(err);
     })
     .put([cors.corsWithOptions, authenticate.verifyUser], (req, res, next) => {
         Step.findById(req.stepId)
@@ -76,5 +75,36 @@ stepChainRouter
                 .catch((err) => next(err));
         }
     );
+
+stepChainRouter
+    .route("/:stepReferenceId")
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get((req, res, next) => {
+        res.statusCode = 403;
+        res.end(
+            `GET operation not supported on /stepChain/${req.params.stepReferenceId}`
+        );
+    })
+    .post((req, res, next) => {
+        res.statusCode = 403;
+        res.end(
+            `POST operation not supported on /stepChain/${req.params.stepReferenceId}`
+        );
+    })
+    .put((req, res, next) => {
+        res.statusCode = 403;
+        res.end(
+            `PUT operation not supported on /stepChain/${req.params.stepReferenceId}`
+        );
+    })
+    .delete((req, res, next) => {
+        StepReference.deleteOne({ _id: req.params.stepReferenceId})
+            .then((response) => {
+                res.statusCode = 200;
+                res.setHeader("Content-Type", "application/json");
+                res.json(response);
+            })
+            .catch((err) => next(err));
+    })
 
 module.exports = stepChainRouter;
