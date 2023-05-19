@@ -4,6 +4,7 @@ const path = require("path");
 const logger = require("morgan");
 const passport = require("passport");
 const config = require("./config");
+const cors = require("cors");   // TK: Remove before building
 
 const mongoose = require("mongoose");
 const url = config.mongoUrl;
@@ -50,6 +51,7 @@ app.set("view engine", "jade");
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cors());    // TK: Remove before building
 
 app.use(passport.initialize());
 
